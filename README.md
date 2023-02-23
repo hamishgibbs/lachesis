@@ -20,4 +20,4 @@ cat data/gps_data.csv | lachesis 200 300 > output.csv
 
 ## Limitations
 
-This implementation relies only on the [Rust standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
+This implementation relies only on the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
