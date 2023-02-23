@@ -8,7 +8,7 @@ Implements the visit detection algorithm proposed in Hariharan and Toyama (2004)
 
 This library requires a `.csv` file (no headers) with the columns: `id` (integer), `time` (unix timestamp - integer), `x`, `y`.
 
-The visit detection algorithm requires the following parameters in the following order:
+The visit detection algorithm requires the following parameters in order:
 - The maximum spatial "roam" (i.e. 200m)
 - The minium time duration of a visit (i.e. 300 seconds)
 
