@@ -158,6 +158,9 @@ fn main() {
     }
     
     let mut stdout = io::stdout();
+
+    writeln!(stdout, "id,start,end,x,y").unwrap();
+
     for visit in visits.into_iter().flatten().collect::<Vec<Visit>>() {
         writeln!(stdout, "{},{},{},{},{}", visit.id, visit.start_time, visit.end_time, visit.point.x, visit.point.y).unwrap();
     }
