@@ -138,11 +138,8 @@ fn detect_stay_points(
 
 fn main() {
 
-    // how do you capture parameters and also stream in from stdin?
-    //let max_distance = std::env::args().nth(1).unwrap().parse::<f64>().unwrap();
-    //let min_time = std::env::args().nth(2).unwrap().parse::<i64>().unwrap();
-
-    let mut visits = Vec::new();
+    let max_distance = std::env::args().nth(1).unwrap().parse::<f64>().unwrap();
+    let min_time = std::env::args().nth(2).unwrap().parse::<i64>().unwrap();
 
     let stdin = io::stdin();
     let reader = stdin.lock();
@@ -151,8 +148,13 @@ fn main() {
 
     let id_records = divide_id_records(&data);
 
+    let mut visits = Vec::new();
+
     for records in id_records {
-        visits.push(detect_stay_points(records, 2.0, 1));
+        visits.push(detect_stay_points(
+                records, 
+                max_distance, 
+                min_time));
     }
     
     let mut stdout = io::stdout();
