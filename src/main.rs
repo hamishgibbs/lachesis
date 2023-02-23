@@ -57,6 +57,14 @@ fn divide_id_records(data: &Vec<Record>) -> Vec<Vec<Record>> {
     id_records
 }
 
+fn max(values: &Vec<f64>) -> f64 {
+    values.iter().copied().fold(f64::NAN, f64::max)
+}
+
+fn min(values: &Vec<f64>) -> f64 {
+    values.iter().copied().fold(f64::NAN, f64::min)
+}
+
 /// Calculate median of an f64 vector
 fn median(values: &Vec<f64>) -> f64 {
     let mut values = values.clone();
@@ -74,6 +82,15 @@ fn calculate_distance(a: &Point, b: &Point) -> f64 {
     ((a.x - b.x).powi(2) + (a.y - b.y).powi(2)).sqrt()
 }
 
+fn merge_records_to_visit(records: Vec<Record>) -> Visit {
+    Visit { id: records[0].id, 
+        start_time: records[0].time, 
+        end_time: records[records.len()-1].time, 
+        point: Point { 
+            x: median(&records.iter().map(|record| record.point.x).collect()), 
+            y: median(&records.iter().map(|record| record.point.y).collect())} }
+}
+
 /// Detect sequential stay points for a vector of records
 fn detect_stay_points(
     records: Vec<Record>, 
@@ -85,38 +102,31 @@ fn detect_stay_points(
     let mut i = 0;
     let mut j = 1;
 
-    // when we reach the end - if it should be deemed a visit, it is not being added right now
-
     while j <= records.len() {
 
         let x_coords: Vec<f64> = records[i..j].iter().map(|record| record.point.x).collect();
         let y_coords: Vec<f64> = records[i..j].iter().map(|record| record.point.x).collect();
 
         let visit_diameter = calculate_distance(
-            &Point { 
-                x: x_coords.iter().copied().fold(f64::NAN, f64::min),
-                y: y_coords.iter().copied().fold(f64::NAN, f64::min)
-            },
-            &Point { 
-                x: x_coords.iter().copied().fold(f64::NAN, f64::max),
-                y: y_coords.iter().copied().fold(f64::NAN, f64::max)
-                }
-
+            &Point { x: min(&x_coords), y: min(&y_coords) },
+            &Point { x: max(&x_coords), y: max(&y_coords) }
         );
 
         if visit_diameter < max_distance {
-            j += 1;
+            // Check whether the final points in the sequence constitute a valid visit
+            if j == records.len() {
+                let visit_duration = records[j-1].time - records[i].time;
+                if visit_duration >= min_time {
+                    visits.push(merge_records_to_visit(records[i..j].to_vec()));
+                }
+                j += 1;
+            } else {
+                j += 1;
+            }
         } else {
             let visit_duration = records[j-2].time - records[i].time;
             if visit_duration >= min_time {
-                visits.push(
-                    Visit { id: records[0].id, 
-                        start_time: records[i].time, 
-                        end_time: records[j-2].time, 
-                        point: Point { 
-                            x: median(&records[i..j-1].iter().map(|record| record.point.x).collect()), 
-                            y: median(&records[i..j-1].iter().map(|record| record.point.y).collect())} }
-                );
+                visits.push(merge_records_to_visit(records[i..j-1].to_vec()));
             } 
             i = j - 1;
         }
@@ -189,7 +199,7 @@ fn test_divide_id_records() {
 }
 
 #[test]
-fn test_detect_stay_points_one_visit() {
+fn test_detect_stay_points_one_visit_trailing_pt() {
     let records = vec![
         Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
         Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
@@ -204,7 +214,7 @@ fn test_detect_stay_points_one_visit() {
 }
 
 #[test]
-fn test_detect_stay_points_two_visits() {
+fn test_detect_stay_points_two_visits_no_trailing_pt() {
     let records = vec![
         Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
         Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
