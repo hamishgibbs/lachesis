@@ -22,13 +22,12 @@ struct Visit {
     point: Point,
 }
 
-fn read_stdin_data() -> Vec<Record> {
-    let stdin = io::stdin();
-    let mut reader = stdin.lock();
+fn read_stdin_data<R>(mut reader: R) -> Vec<Record> where R: BufRead {
     let mut line = String::new();
     let mut data = Vec::new();
 
     while reader.read_line(&mut line).unwrap() > 0 {
+        line.pop();
         let mut parts = line.split(",");
         let record = Record {
             id: parts.next().unwrap().parse::<i64>().unwrap(),
@@ -145,7 +144,10 @@ fn main() {
 
     let mut visits = Vec::new();
 
-    let data = read_stdin_data();
+    let stdin = io::stdin();
+    let reader = stdin.lock();
+
+    let data = read_stdin_data(reader);
 
     let id_records = divide_id_records(&data);
 
@@ -155,8 +157,22 @@ fn main() {
     
     let mut stdout = io::stdout();
     for visit in visits.into_iter().flatten().collect::<Vec<Visit>>() {
-        writeln!(stdout, "{},{},{},{},{}\n", visit.id, visit.start_time, visit.end_time, visit.point.x, visit.point.y).unwrap();
+        writeln!(stdout, "{},{},{},{},{}", visit.id, visit.start_time, visit.end_time, visit.point.x, visit.point.y).unwrap();
     }
+}
+
+#[test]
+fn test_read_multiline_stdin_data() {
+    let mut input = String::new();
+    input.push_str("1,1,1.0,1.0\n1,1,1.0,1.0");
+
+    let data = read_stdin_data(&mut input.as_bytes());
+    
+    assert_eq!(data.len(), 2);
+    assert_eq!(data[0].id, 1);
+    assert_eq!(data[0].time, 1);
+    assert_eq!(data[0].point.x, 1.0);
+    assert_eq!(data[0].point.y, 1.0);
 }
 
 #[test]
