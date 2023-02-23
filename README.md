@@ -6,13 +6,13 @@ Implements the visit detection algorithm proposed in Hariharan and Toyama (2004)
 
 ## Data format
 
-This library requires a `csv` file with the columns: `id` (integer), `time` (unix timestamp - integer), `x`, `y`.
+This library requires a `.csv` file (no headers) with the columns: `id` (integer), `time` (unix timestamp - integer), `x`, `y`.
 
-## Usage
+The visit detection algorithm requires the following parameters in the following order:
+- The maximum spatial "roam" (i.e. 200m)
+- The minium time duration of a visit (i.e. 300 seconds)
 
-The visit detection algorithm requires the following parameters:
-- The maximum spatial "roam" (200m below)
-- The minium time duration of a visit (300 seconds below)
+## Example usage
 
 ``` {shell}
 cat data/gps_data.csv | lachesis 200 300 > output.csv
