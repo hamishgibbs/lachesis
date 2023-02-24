@@ -46,13 +46,16 @@ fn read_stdin_data<R>(mut reader: R) -> Vec<Record> where R: BufRead {
 /// Divide vector of records into a vector of vectors of records, by id.
 fn divide_id_records(data: &Vec<Record>) -> Vec<Vec<Record>> {
     let mut id_records = Vec::new();
-
-    for id in data[0].id..=data[data.len()-1].id {
-        let records = data.iter().filter(|record| record.id == id).cloned().collect::<Vec<Record>>();
-        if !records.is_empty() {
-            id_records.push(records);
+    
+    let mut i = 0;
+    for j in 0..data.len() {
+        if data[i].id != data[j].id {
+            id_records.push(data[i..j].to_vec());
+            i = j;
         }
     }
+    id_records.push(data[i..data.len()].to_vec());
+    
     id_records
 }
 
@@ -216,13 +219,19 @@ fn test_divide_id_records() {
     let records = vec![
         Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
         Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
-        Record{id: 2, time: 1, point: Point{x: 3.0, y: 3.0}}];
+        Record{id: 2, time: 1, point: Point{x: 3.0, y: 3.0}},
+        Record{id: 3, time: 1, point: Point{x: 3.0, y: 3.0}},
+        Record{id: 3, time: 2, point: Point{x: 3.0, y: 3.0}}];
 
     let id_records = divide_id_records(&records);
     
-    assert_eq!(id_records.len(), 2);
+    assert_eq!(id_records.len(), 3);
     assert_eq!(id_records[0].len(), 2);
     assert_eq!(id_records[1].len(), 1);
+    assert_eq!(id_records[2].len(), 2);
+    assert_eq!(id_records[0][0].id, 1);
+    assert_eq!(id_records[1][0].id, 2);
+    assert_eq!(id_records[2][0].id, 3);
 }
 
 #[test]
