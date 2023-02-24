@@ -99,7 +99,6 @@ fn detect_stay_points(
 
     while j <= records.len() {
 
-        // It is quicker to build up a min and max with logical comparisons than to use min and max functions
         if records[j-1].point.x < min_x {
             min_x = records[j-1].point.x;
         }
