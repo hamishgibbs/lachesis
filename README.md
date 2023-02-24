@@ -8,7 +8,7 @@ Implements the visit detection algorithm from Hariharan and Toyama (2004) *Proje
 
 This library requires a `.csv` file (no headers) with the columns: `id` (integer), `time` (unix timestamp - integer), `x`, `y`.
 
-Observations must be ordered by time (ascending).
+Observations must be ordered by id and time (ascending).
 
 The visit detection algorithm requires parameters in the following order:
 - The maximum spatial "roam" (i.e. 200m)
