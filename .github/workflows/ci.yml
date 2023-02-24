@@ -1,4 +1,4 @@
-name: Lachesis Tests
+name: Tests
 
 on:
   push:
