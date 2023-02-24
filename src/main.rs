@@ -56,14 +56,6 @@ fn divide_id_records(data: &Vec<Record>) -> Vec<Vec<Record>> {
     id_records
 }
 
-fn max(values: &Vec<f64>) -> f64 {
-    values.iter().copied().fold(f64::NAN, f64::max)
-}
-
-fn min(values: &Vec<f64>) -> f64 {
-    values.iter().copied().fold(f64::NAN, f64::min)
-}
-
 /// Calculate median of an f64 vector
 fn median(values: &Vec<f64>) -> f64 {
     let mut values = values.clone();
@@ -96,38 +88,52 @@ fn detect_stay_points(
     max_distance: f64,
     min_time: i64) -> Vec<Visit> {
 
-    let mut visits = Vec::new();
+    let mut visits: Vec<Visit> = Vec::new();
 
     let mut i = 0;
     let mut j = 1;
+    let (mut min_x, mut max_x, mut min_y, mut max_y) = (records[i].point.x, records[i].point.x, records[i].point.y, records[i].point.y);
 
     while j <= records.len() {
 
-        let x_coords: Vec<f64> = records[i..j].iter().map(|record| record.point.x).collect();
-        let y_coords: Vec<f64> = records[i..j].iter().map(|record| record.point.x).collect();
+        // It is quicker to build up a min and max with logical comparisons than to use min and max functions
+        if records[j-1].point.x < min_x {
+            min_x = records[j-1].point.x;
+        }
+        if records[j-1].point.x > max_x {
+            max_x = records[j-1].point.x;
+        }
+        if records[j-1].point.y < min_y {
+            min_y = records[j-1].point.y;
+        }
+        if records[j-1].point.y > max_y {
+            max_y = records[j-1].point.y;
+        }
 
         let visit_diameter = calculate_distance(
-            &Point { x: min(&x_coords), y: min(&y_coords) },
-            &Point { x: max(&x_coords), y: max(&y_coords) }
+            &Point { x: min_x, y: min_y },
+            &Point { x: max_x, y: max_y }
         );
 
         if visit_diameter < max_distance {
-            // Check whether the final points in the sequence constitute a valid visit
             if j == records.len() {
                 let visit_duration = records[j-1].time - records[i].time;
                 if visit_duration >= min_time {
                     visits.push(merge_records_to_visit(records[i..j].to_vec()));
                 }
-                j += 1;
-            } else {
-                j += 1;
             }
+            j += 1;
+            
         } else {
             let visit_duration = records[j-2].time - records[i].time;
             if visit_duration >= min_time {
                 visits.push(merge_records_to_visit(records[i..j-1].to_vec()));
-            } 
+            }
             i = j - 1;
+            min_x = records[i].point.x;
+            max_x = records[i].point.x;
+            min_y = records[i].point.y;
+            max_y = records[i].point.y;
         }
 
     }
