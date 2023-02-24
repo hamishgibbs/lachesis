@@ -56,14 +56,6 @@ fn divide_id_records(data: &Vec<Record>) -> Vec<Vec<Record>> {
     id_records
 }
 
-fn max(values: &Vec<f64>) -> f64 {
-    values.iter().copied().fold(f64::NAN, f64::max)
-}
-
-fn min(values: &Vec<f64>) -> f64 {
-    values.iter().copied().fold(f64::NAN, f64::min)
-}
-
 /// Calculate median of an f64 vector
 fn median(values: &Vec<f64>) -> f64 {
     let mut values = values.clone();
@@ -104,6 +96,7 @@ fn detect_stay_points(
 
     while j <= records.len() {
 
+        // It is quicker to build up a min and max with logical comparisons than to use min and max functions
         if records[j-1].point.x < min_x {
             min_x = records[j-1].point.x;
         }
