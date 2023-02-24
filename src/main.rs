@@ -270,3 +270,8 @@ fn test_detect_stay_points_two_visits_no_trailing_pt() {
     assert_eq!(visits[1].point.x, 10.0);
     assert_eq!(visits[1].point.y, 10.0);
 }
+
+#[test]
+fn this_test_fails() {
+    assert!(false);
+}
