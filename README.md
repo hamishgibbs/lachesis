@@ -8,7 +8,7 @@ Implements the visit detection algorithm from Hariharan and Toyama (2004) *Proje
 
 This library requires a `.csv` file (no headers) with the columns: `id` (String), `time` (unix timestamp - Integer), `x` (Float), `y` (Float).
 
-Observations must be ordered by time (ascending).
+Observations must be ordered by id and time (ascending).
 
 The visit detection algorithm requires parameters in the following order:
 - The maximum spatial "roam" (i.e. 200m)
@@ -22,4 +22,4 @@ cat data/gps_data.csv | lachesis 200 300 > output.csv
 
 ## Limitations
 
-This implementation was built using only on the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
+This implementation was built using only the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
