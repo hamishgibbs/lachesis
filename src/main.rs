@@ -8,15 +8,15 @@ struct Point {
     y: f64,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct Record {
-    id: i64,
+    id: String,
     time: i64,
     point: Point,   
 } 
 
 struct Visit {
-    id: i64,
+    id: String,
     start_time: i64,
     end_time: i64,
     point: Point,
@@ -30,7 +30,7 @@ fn read_stdin_data<R>(mut reader: R) -> Vec<Record> where R: BufRead {
         line.pop();
         let mut parts = line.split(",");
         let record = Record {
-            id: parts.next().unwrap().parse::<i64>().unwrap(),
+            id: parts.next().unwrap().parse::<String>().unwrap(),
             time: parts.next().unwrap().parse::<i64>().unwrap(),
             point: Point {
                 x: parts.next().unwrap().parse::<f64>().unwrap(),
@@ -77,7 +77,7 @@ fn calculate_distance(a: &Point, b: &Point) -> f64 {
 }
 
 fn merge_records_to_visit(records: Vec<Record>) -> Visit {
-    Visit { id: records[0].id, 
+    Visit { id: records[0].id.clone(), 
         start_time: records[0].time, 
         end_time: records[records.len()-1].time, 
         point: Point { 
@@ -177,12 +177,12 @@ fn main() {
 #[test]
 fn test_read_multiline_stdin_data() {
     let mut input = String::new();
-    input.push_str("1,1,1.0,1.0\n1,1,1.0,1.0");
+    input.push_str("a,1,1.0,1.0\nb,1,1.0,1.0");
 
     let data = read_stdin_data(&mut input.as_bytes());
     
     assert_eq!(data.len(), 2);
-    assert_eq!(data[0].id, 1);
+    assert_eq!(data[0].id, String::from("a"));
     assert_eq!(data[0].time, 1);
     assert_eq!(data[0].point.x, 1.0);
     assert_eq!(data[0].point.y, 1.0);
@@ -216,11 +216,11 @@ fn test_calculate_distance_same_point() {
 #[test]
 fn test_divide_id_records() {
     let records = vec![
-        Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
-        Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
-        Record{id: 2, time: 1, point: Point{x: 3.0, y: 3.0}},
-        Record{id: 3, time: 1, point: Point{x: 3.0, y: 3.0}},
-        Record{id: 3, time: 2, point: Point{x: 3.0, y: 3.0}}];
+        Record{id: String::from("a"), time: 1, point: Point{x: 1.0, y: 1.0}}, 
+        Record{id: String::from("a"), time: 2, point: Point{x: 2.0, y: 2.0}}, 
+        Record{id: String::from("b"), time: 1, point: Point{x: 3.0, y: 3.0}},
+        Record{id: String::from("c"), time: 1, point: Point{x: 3.0, y: 3.0}},
+        Record{id: String::from("c"), time: 2, point: Point{x: 3.0, y: 3.0}}];
 
     let id_records = divide_id_records(&records);
     
@@ -228,17 +228,17 @@ fn test_divide_id_records() {
     assert_eq!(id_records[0].len(), 2);
     assert_eq!(id_records[1].len(), 1);
     assert_eq!(id_records[2].len(), 2);
-    assert_eq!(id_records[0][0].id, 1);
-    assert_eq!(id_records[1][0].id, 2);
-    assert_eq!(id_records[2][0].id, 3);
+    assert_eq!(id_records[0][0].id, String::from("a"));
+    assert_eq!(id_records[1][0].id, String::from("b"));
+    assert_eq!(id_records[2][0].id, String::from("c"));
 }
 
 #[test]
 fn test_detect_stay_points_one_visit_trailing_pt() {
     let records = vec![
-        Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
-        Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
-        Record{id: 1, time: 3, point: Point{x: 5.0, y: 5.0}}];
+        Record{id: String::from("a"), time: 1, point: Point{x: 1.0, y: 1.0}}, 
+        Record{id: String::from("a"), time: 2, point: Point{x: 2.0, y: 2.0}}, 
+        Record{id: String::from("a"), time: 3, point: Point{x: 5.0, y: 5.0}}];
     
     let visits = detect_stay_points(records, 2.0, 1);
     assert_eq!(visits.len(), 1);
@@ -251,12 +251,12 @@ fn test_detect_stay_points_one_visit_trailing_pt() {
 #[test]
 fn test_detect_stay_points_two_visits_no_trailing_pt() {
     let records = vec![
-        Record{id: 1, time: 1, point: Point{x: 1.0, y: 1.0}}, 
-        Record{id: 1, time: 2, point: Point{x: 2.0, y: 2.0}}, 
-        Record{id: 1, time: 3, point: Point{x: 5.0, y: 5.0}},
-        Record{id: 1, time: 4, point: Point{x: 10.0, y: 10.0}},
-        Record{id: 1, time: 5, point: Point{x: 11.0, y: 11.0}},
-        Record{id: 1, time: 6, point: Point{x: 10.0, y: 10.0}}];
+        Record{id: String::from("a"), time: 1, point: Point{x: 1.0, y: 1.0}}, 
+        Record{id: String::from("a"), time: 2, point: Point{x: 2.0, y: 2.0}}, 
+        Record{id: String::from("a"), time: 3, point: Point{x: 5.0, y: 5.0}},
+        Record{id: String::from("a"), time: 4, point: Point{x: 10.0, y: 10.0}},
+        Record{id: String::from("a"), time: 5, point: Point{x: 11.0, y: 11.0}},
+        Record{id: String::from("a"), time: 6, point: Point{x: 10.0, y: 10.0}}];
     
     let visits = detect_stay_points(records, 2.0, 1);
     assert_eq!(visits.len(), 2);
