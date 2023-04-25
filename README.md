@@ -6,7 +6,7 @@ Implements the visit detection algorithm from Hariharan and Toyama (2004) *Proje
 
 ## Data format
 
-This library requires a `.csv` file (no headers) with the columns: `id` (integer), `time` (unix timestamp - integer), `x`, `y`.
+This library requires a `.csv` file (no headers) with the columns: `id` (String), `time` (unix timestamp - Integer), `x` (Float), `y` (Float).
 
 Observations must be ordered by time (ascending).
 
@@ -22,4 +22,4 @@ cat data/gps_data.csv | lachesis 200 300 > output.csv
 
 ## Limitations
 
-This implementation was build using only on the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
+This implementation was built using only on the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
