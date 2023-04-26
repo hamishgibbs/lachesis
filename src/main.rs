@@ -34,6 +34,7 @@ fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: 
 
         let x = parts[2].parse::<f64>();
 
+        // Assume that if x is not a number, this is the header row
         if let Err(_err) = x {
             line.clear();
             continue;
