@@ -1,6 +1,7 @@
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
+use chrono::NaiveDateTime;
 
 #[derive(Clone, Copy)]
 struct Point {
@@ -22,19 +23,20 @@ struct Visit {
     point: Point,
 }
 
-fn read_stdin_data<R>(mut reader: R) -> Vec<Record> where R: BufRead {
+fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
     let mut line = String::new();
     let mut data = Vec::new();
 
     while reader.read_line(&mut line).unwrap() > 0 {
         line.pop();
-        let mut parts = line.split(",");
+        let parts = line.split(",").collect::<Vec<&str>>();
+
         let record = Record {
-            id: parts.next().unwrap().parse::<String>().unwrap(),
-            time: parts.next().unwrap().parse::<i64>().unwrap(),
+            id: parts[0].parse::<String>().unwrap(),
+            time: NaiveDateTime::parse_from_str(&parts[1].parse::<String>().unwrap(), date_fmt).unwrap().timestamp(),
             point: Point {
-                x: parts.next().unwrap().parse::<f64>().unwrap(),
-                y: parts.next().unwrap().parse::<f64>().unwrap(),
+                x: parts[2].parse::<f64>().unwrap(),
+                y: parts[3].parse::<f64>().unwrap(),
             },
         };
         data.push(record);
@@ -143,16 +145,30 @@ fn detect_stay_points(
     visits
 }
 
+fn fmt_visits_csv(visits: Vec<Visit>, date_fmt: &String) -> Vec<String> {
+    let mut output = Vec::new();
+    for visit in visits {
+        output.push(format!("{},{},{},{},{},{}", 
+            visit.id, 
+            NaiveDateTime::from_timestamp_opt(visit.start_time, 1).unwrap().format(date_fmt), 
+            NaiveDateTime::from_timestamp_opt(visit.end_time, 1).unwrap().format(date_fmt), 
+            visit.point.x, 
+            visit.point.y, 
+            visit.end_time - visit.start_time));
+    }
+    output
+}
 
 fn main() {
 
     let max_distance = std::env::args().nth(1).unwrap().parse::<f64>().unwrap();
     let min_time = std::env::args().nth(2).unwrap().parse::<i64>().unwrap();
+    let date_fmt = std::env::args().nth(3).unwrap().parse::<String>().unwrap();
 
     let stdin = io::stdin();
     let reader = stdin.lock();
 
-    let data = read_stdin_data(reader);
+    let data = read_stdin_data(reader, &date_fmt);
 
     let id_records = divide_id_records(&data);
 
@@ -167,25 +183,32 @@ fn main() {
     
     let mut stdout = io::stdout();
 
-    writeln!(stdout, "id,start,end,x,y").unwrap();
-
-    for visit in visits.into_iter().flatten().collect::<Vec<Visit>>() {
-        writeln!(stdout, "{},{},{},{},{}", visit.id, visit.start_time, visit.end_time, visit.point.x, visit.point.y).unwrap();
+    writeln!(stdout, "id,start,end,x,y,duration").unwrap();
+    for ln in fmt_visits_csv(visits.into_iter().flatten().collect(), &date_fmt) {
+        writeln!(stdout, "{}", ln).unwrap(); 
     }
 }
 
 #[test]
 fn test_read_multiline_stdin_data() {
     let mut input = String::new();
-    input.push_str("a,1,1.0,1.0\nb,1,1.0,1.0");
+    input.push_str("a,2020-01-01 10:00:00,1.0,1.0\nb,2020-01-01 16:00:00,1.0,1.0");
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
 
-    let data = read_stdin_data(&mut input.as_bytes());
+    let data = read_stdin_data(
+        &mut input.as_bytes(),
+        &date_fmt
+    );
     
     assert_eq!(data.len(), 2);
     assert_eq!(data[0].id, String::from("a"));
-    assert_eq!(data[0].time, 1);
+    assert_eq!(data[0].time, 1577872800);
     assert_eq!(data[0].point.x, 1.0);
     assert_eq!(data[0].point.y, 1.0);
+    assert_eq!(data[1].id, String::from("b"));
+    assert_eq!(data[1].time, 1577894400);
+    assert_eq!(data[1].point.x, 1.0);
+    assert_eq!(data[1].point.y, 1.0);
 }
 
 #[test]
@@ -268,4 +291,17 @@ fn test_detect_stay_points_two_visits_no_trailing_pt() {
     assert_eq!(visits[1].end_time, 6);
     assert_eq!(visits[1].point.x, 10.0);
     assert_eq!(visits[1].point.y, 10.0);
+}
+
+#[test]
+fn test_fmt_visits_csv() {
+    let visits = vec![
+        Visit{id: String::from("a"), start_time: 1577872800, end_time: 1577894400, point: Point{x: 1.5, y: 1.5}}, 
+        Visit{id: String::from("b"), start_time: 1577872800, end_time: 1577894400, point: Point{x: 1.5, y: 1.5}}];
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    let csv = fmt_visits_csv(visits, &date_fmt);
+    assert_eq!(csv.len(), 2);
+    assert_eq!(csv[0], String::from("a,2020-01-01 10:00:00,2020-01-01 16:00:00,1.5,1.5,21600"));
+    assert_eq!(csv[1], String::from("b,2020-01-01 10:00:00,2020-01-01 16:00:00,1.5,1.5,21600"));
 }
