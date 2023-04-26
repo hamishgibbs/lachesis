@@ -19,7 +19,3 @@ The visit detection algorithm requires parameters in the following order:
 ``` {shell}
 cat data/gps_data.csv | lachesis 200 300 > output.csv
 ```
-
-## Limitations
-
-This implementation was built using only the Rust [standard library](https://doc.rust-lang.org/std/) so that it can be installed without dependencies. 
