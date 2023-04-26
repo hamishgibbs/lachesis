@@ -6,7 +6,7 @@ Implements the visit detection algorithm from Hariharan and Toyama (2004) *Proje
 
 ## Data format
 
-This library requires a `.csv` file (no headers) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
+This library requires a `.csv` file (header optional) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
 
 Observations must be ordered by id and time (ascending).
 
