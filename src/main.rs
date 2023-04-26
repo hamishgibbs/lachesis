@@ -145,6 +145,19 @@ fn detect_stay_points(
     visits
 }
 
+fn fmt_visits_csv(visits: Vec<Visit>, date_fmt: &String) -> Vec<String> {
+    let mut output = Vec::new();
+    for visit in visits {
+        output.push(format!("{},{},{},{},{},{}", 
+            visit.id, 
+            NaiveDateTime::from_timestamp_opt(visit.start_time, 1).unwrap().format(date_fmt), 
+            NaiveDateTime::from_timestamp_opt(visit.end_time, 1).unwrap().format(date_fmt), 
+            visit.point.x, 
+            visit.point.y, 
+            visit.end_time - visit.start_time));
+    }
+    output
+}
 
 fn main() {
 
@@ -170,15 +183,9 @@ fn main() {
     
     let mut stdout = io::stdout();
 
-    writeln!(stdout, "id,start,end,x,y").unwrap();
-
-    for visit in visits.into_iter().flatten().collect::<Vec<Visit>>() {
-        writeln!(stdout, "{},{},{},{},{}", 
-        visit.id, 
-        NaiveDateTime::from_timestamp_opt(visit.start_time, 1).unwrap().format(&date_fmt), 
-        NaiveDateTime::from_timestamp_opt(visit.end_time, 1).unwrap().format(&date_fmt), 
-        visit.point.x, 
-        visit.point.y).unwrap();
+    writeln!(stdout, "id,start,end,x,y,duration").unwrap();
+    for ln in fmt_visits_csv(visits.into_iter().flatten().collect(), &date_fmt) {
+        writeln!(stdout, "{}", ln).unwrap(); 
     }
 }
 
@@ -284,4 +291,17 @@ fn test_detect_stay_points_two_visits_no_trailing_pt() {
     assert_eq!(visits[1].end_time, 6);
     assert_eq!(visits[1].point.x, 10.0);
     assert_eq!(visits[1].point.y, 10.0);
+}
+
+#[test]
+fn test_fmt_visits_csv() {
+    let visits = vec![
+        Visit{id: String::from("a"), start_time: 1577872800, end_time: 1577894400, point: Point{x: 1.5, y: 1.5}}, 
+        Visit{id: String::from("b"), start_time: 1577872800, end_time: 1577894400, point: Point{x: 1.5, y: 1.5}}];
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    let csv = fmt_visits_csv(visits, &date_fmt);
+    assert_eq!(csv.len(), 2);
+    assert_eq!(csv[0], String::from("a,2020-01-01 10:00:00,2020-01-01 16:00:00,1.5,1.5,21600"));
+    assert_eq!(csv[1], String::from("b,2020-01-01 10:00:00,2020-01-01 16:00:00,1.5,1.5,21600"));
 }
