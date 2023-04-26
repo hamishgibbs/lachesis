@@ -29,13 +29,21 @@ fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: 
 
     while reader.read_line(&mut line).unwrap() > 0 {
         line.pop();
+
         let parts = line.split(",").collect::<Vec<&str>>();
+
+        let x = parts[2].parse::<f64>();
+
+        if let Err(_err) = x {
+            line.clear();
+            continue;
+        };
 
         let record = Record {
             id: parts[0].parse::<String>().unwrap(),
             time: NaiveDateTime::parse_from_str(&parts[1].parse::<String>().unwrap(), date_fmt).unwrap().timestamp(),
             point: Point {
-                x: parts[2].parse::<f64>().unwrap(),
+                x: x.unwrap(),
                 y: parts[3].parse::<f64>().unwrap(),
             },
         };
@@ -209,6 +217,20 @@ fn test_read_multiline_stdin_data() {
     assert_eq!(data[1].time, 1577894400);
     assert_eq!(data[1].point.x, 1.0);
     assert_eq!(data[1].point.y, 1.0);
+}
+
+#[test]
+fn test_read_multiline_stdin_data_header() {
+    let mut input = String::new();
+    input.push_str("id,time,x,y\nb,2020-01-01 16:00:00,1.0,1.0");
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    let data = read_stdin_data(
+        &mut input.as_bytes(),
+        &date_fmt
+    );
+    
+    assert_eq!(data.len(), 1);
 }
 
 #[test]
