@@ -13,7 +13,7 @@ Observations must be ordered by id and time (ascending).
 The visit detection algorithm requires parameters in the following order:
 - The maximum spatial "roam" (i.e. 200m)
 - The minium time duration of a visit (i.e. 300 seconds)
-- The format of dates in the input file (i.e. "%Y-%m-%d %H:%M:%S")
+- A string speciying the [format](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) of dates in the input file (i.e. "%Y-%m-%d %H:%M:%S")
 
 ## Example usage
 
