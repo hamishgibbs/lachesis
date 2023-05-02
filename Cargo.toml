@@ -2,8 +2,10 @@
 name = "lachesis"
 version = "0.1.0"
 edition = "2021"
+description = "GPS stop point detection from Hariharan and Toyama (2004) 'Project Lachesis: Parsing and Modeling Location Histories'"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 chrono = "0.4.24"
+clap = { version = "4.2.5", features = ["derive"] }
