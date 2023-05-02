@@ -8,15 +8,27 @@ Implements the stop point detection algorithm from Hariharan and Toyama (2004) *
 
 This library requires a `.csv` file (header optional) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
 
-Observations must be ordered by id and time (ascending).
-
-The visit detection algorithm requires parameters in the following order:
-- The maximum spatial "roam" (i.e. 200m)
-- The minium time duration of a visit (i.e. 300 seconds)
-- A string speciying the [format](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) of dates in the input file (i.e. "%Y-%m-%d %H:%M:%S")
-
 ## Example usage
 
 ``` {shell}
-cat data/gps_data.csv | lachesis 200 300 '%Y-%m-%d %H:%M:%S' > output.csv
+cat data/gps_data.csv | lachesis --distance 200 --time 300 --fmt '%Y-%m-%d %H:%M:%S' > output.csv
+```
+
+## Help
+
+```
+lachesis --help
+```
+
+```
+GPS stop point detection from Hariharan and Toyama (2004) 'Project Lachesis: Parsing and Modeling Location Histories'
+
+Usage: lachesis --distance <DISTANCE> --time <TIME> --fmt-time <FMT_TIME>
+
+Options:
+  -d, --distance <DISTANCE>  Maximum spatial roam of a stop point (i.e. 200m)
+  -t, --time <TIME>          Minimum time duration of a stop point (i.e. 300 seconds)
+  -f, --fmt-time <FMT_TIME>  Format of dates in the input file (i.e. "%Y-%m-%d %H:%M:%S")
+  -h, --help                 Print help
+  -V, --version              Print version
 ```
