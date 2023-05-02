@@ -2,7 +2,7 @@
 
 ## Description
 
-Implements the visit detection algorithm from Hariharan and Toyama (2004) *Project Lachesis: Parsing and Modeling Location Histories*
+Implements the stop point detection algorithm from Hariharan and Toyama (2004) *Project Lachesis: Parsing and Modeling Location Histories*
 
 ## Data format
 

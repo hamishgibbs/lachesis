@@ -2,6 +2,7 @@ use std::io;
 use std::io::BufRead;
 use std::io::Write;
 use chrono::NaiveDateTime;
+use clap::Parser;
 
 #[derive(Clone, Copy)]
 struct Point {
@@ -21,6 +22,22 @@ struct Visit {
     start_time: i64,
     end_time: i64,
     point: Point,
+}
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Maximum spatial roam of a stop point (i.e. 200m)
+    #[arg(short, long)]
+    distance: f64,
+
+    /// Minimum time duration of a stop point (i.e. 300 seconds)
+    #[arg(short, long)]
+    time: i64,
+
+    /// Format of dates in the input file (i.e. "%Y-%m-%d %H:%M:%S")
+    #[arg(short, long)]
+    fmt_time: String
 }
 
 fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
@@ -169,15 +186,12 @@ fn fmt_visits_csv(visits: Vec<Visit>, date_fmt: &String) -> Vec<String> {
 }
 
 fn main() {
-
-    let max_distance = std::env::args().nth(1).unwrap().parse::<f64>().unwrap();
-    let min_time = std::env::args().nth(2).unwrap().parse::<i64>().unwrap();
-    let date_fmt = std::env::args().nth(3).unwrap().parse::<String>().unwrap();
+    let args = Args::parse();
 
     let stdin = io::stdin();
     let reader = stdin.lock();
 
-    let data = read_stdin_data(reader, &date_fmt);
+    let data = read_stdin_data(reader, &args.fmt_time);
 
     let id_records = divide_id_records(&data);
 
@@ -186,14 +200,14 @@ fn main() {
     for records in id_records {
         visits.push(detect_stay_points(
                 records, 
-                max_distance, 
-                min_time));
+                args.distance, 
+                args.time));
     }
     
     let mut stdout = io::stdout();
 
     writeln!(stdout, "id,start,end,x,y,duration").unwrap();
-    for ln in fmt_visits_csv(visits.into_iter().flatten().collect(), &date_fmt) {
+    for ln in fmt_visits_csv(visits.into_iter().flatten().collect(), &args.fmt_time) {
         writeln!(stdout, "{}", ln).unwrap(); 
     }
 }
