@@ -2,7 +2,7 @@
 
 ## Description
 
-Implements the stop point detection algorithm from Hariharan and Toyama (2004) *Project Lachesis: Parsing and Modeling Location Histories*
+Implements the first-stage stop point detection algorithm from Hariharan and Toyama (2004) *Project Lachesis: Parsing and Modeling Location Histories*
 
 ## Data format
 
