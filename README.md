@@ -12,7 +12,7 @@ cargo install lachesis
 
 ## Data format
 
-This binary requires a `.csv` file (header optional) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
+This binary requires a `.csv` file (no header) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
 
 ## Example usage
 
