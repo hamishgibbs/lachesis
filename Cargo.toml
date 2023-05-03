@@ -6,7 +6,6 @@ homepage = "https://github.com/hamishgibbs/lachesis"
 repository = "https://github.com/hamishgibbs/lachesis"
 documentation = "https://github.com/hamishgibbs/lachesis/blob/main/README.md"
 edition = "2021"
-opt-level = 3
 description = "GPS stop point detection from Hariharan and Toyama (2004) 'Project Lachesis: Parsing and Modeling Location Histories'"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
