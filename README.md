@@ -6,8 +6,6 @@ Implements the first-stage stop point detection algorithm from Hariharan and Toy
 
 ## Installation
 
-Install the lachesis binary from [crates.io](https://crates.io/crates/lachesis):
-
 ```
 cargo install lachesis  
 ```
