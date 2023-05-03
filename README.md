@@ -11,7 +11,7 @@ This library requires a `.csv` file (header optional) with the columns: `id` (St
 ## Example usage
 
 ``` {shell}
-cat data/gps_data.csv | lachesis --distance 200 --time 300 --fmt '%Y-%m-%d %H:%M:%S' > output.csv
+cat data/gps_data.csv | lachesis --distance 200 --time 300 --fmt-time '%Y-%m-%d %H:%M:%S' > output.csv
 ```
 
 ## Help
