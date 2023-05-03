@@ -4,9 +4,17 @@
 
 Implements the first-stage stop point detection algorithm from Hariharan and Toyama (2004) *Project Lachesis: Parsing and Modeling Location Histories*
 
+## Installation
+
+Install the lachesis binary from [crates.io](https://crates.io/crates/lachesis):
+
+```
+cargo install lachesis  
+```
+
 ## Data format
 
-This library requires a `.csv` file (header optional) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
+This binary requires a `.csv` file (header optional) with the columns: `id` (String), `time` (String), `x` (Float), `y` (Float).
 
 ## Example usage
 
@@ -14,7 +22,7 @@ This library requires a `.csv` file (header optional) with the columns: `id` (St
 cat data/gps_data.csv | lachesis --distance 200 --time 300 --fmt-time '%Y-%m-%d %H:%M:%S' > output.csv
 ```
 
-## Help
+## API Documentation
 
 ```
 lachesis --help
