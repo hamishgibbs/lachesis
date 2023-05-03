@@ -1,6 +1,6 @@
 [package]
 name = "lachesis"
-version = "1.0.0"
+version = "1.0.1"
 license-file = "LICENSE"
 homepage = "https://github.com/hamishgibbs/lachesis"
 repository = "https://github.com/hamishgibbs/lachesis"
