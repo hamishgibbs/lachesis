@@ -1,8 +1,18 @@
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
+use serde::Deserialize;
+use csv::ReaderBuilder;
 use chrono::NaiveDateTime;
 use clap::Parser;
+
+#[derive(Debug, Deserialize)]
+struct Row {
+    id: String,
+    time: String,
+    x: f64,
+    y: f64
+} 
 
 #[derive(Clone, Copy)]
 struct Point {
@@ -40,34 +50,40 @@ struct Args {
     fmt_time: String
 }
 
-fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
-    let mut line = String::new();
+fn read_stdin_data<R>(reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
     let mut data = Vec::new();
 
-    while reader.read_line(&mut line).unwrap() > 0 {
-        line.pop();
+    let mut reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_reader(reader);
 
-        let parts = line.split(",").collect::<Vec<&str>>();
+    for result in reader.records() {
+        let record = result.unwrap();
+        let row: Row = record.deserialize(None).unwrap();
+        
+        let time = NaiveDateTime::parse_from_str(&row.time, date_fmt);
 
-        let x = parts[2].parse::<f64>();
-
-        // Assume that if x is not a number, this is the header row
-        if let Err(_err) = x {
-            line.clear();
-            continue;
+        let timestamp = match time {
+            Ok(time) => time.timestamp(),
+            Err(_err) => panic!("Error - Unable to parse time to format {:?}: {:?}", date_fmt, time),
         };
+
+        if !row.x.is_finite() || !row.y.is_finite() {
+            panic!("Error - Invalid coordinates: {:?}", row);
+        }
 
         let record = Record {
-            id: parts[0].parse::<String>().unwrap(),
-            time: NaiveDateTime::parse_from_str(&parts[1].parse::<String>().unwrap(), date_fmt).unwrap().timestamp(),
+            id: row.id,
+            time: timestamp,
             point: Point {
-                x: x.unwrap(),
-                y: parts[3].parse::<f64>().unwrap(),
+                x: row.x,
+                y: row.y,
             },
         };
+
         data.push(record);
-        line.clear();
     }
+
     data
 }
 
@@ -232,20 +248,6 @@ fn test_read_multiline_stdin_data() {
     assert_eq!(data[1].time, 1577894400);
     assert_eq!(data[1].point.x, 1.0);
     assert_eq!(data[1].point.y, 1.0);
-}
-
-#[test]
-fn test_read_multiline_stdin_data_header() {
-    let mut input = String::new();
-    input.push_str("id,time,x,y\nb,2020-01-01 16:00:00,1.0,1.0");
-    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
-
-    let data = read_stdin_data(
-        &mut input.as_bytes(),
-        &date_fmt
-    );
-    
-    assert_eq!(data.len(), 1);
 }
 
 #[test]

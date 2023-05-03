@@ -9,3 +9,5 @@ description = "GPS stop point detection from Hariharan and Toyama (2004) 'Projec
 [dependencies]
 chrono = "0.4.24"
 clap = { version = "4.2.5", features = ["derive"] }
+csv = "1.2.1"
+serde = { version = "1.0.160", features = ["derive"] }
