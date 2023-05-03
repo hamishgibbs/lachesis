@@ -1,8 +1,18 @@
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
+use serde::Deserialize;
+use csv::ReaderBuilder;
 use chrono::NaiveDateTime;
 use clap::Parser;
+
+#[derive(Debug, Deserialize)]
+struct Row {
+    id: String,
+    time: String,
+    x: f64,
+    y: f64
+} 
 
 #[derive(Clone, Copy)]
 struct Point {
@@ -40,34 +50,49 @@ struct Args {
     fmt_time: String
 }
 
-fn read_stdin_data<R>(mut reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
-    let mut line = String::new();
+fn read_records_csv<R>(reader: R, date_fmt: &String) -> Vec<Record> where R: BufRead {
     let mut data = Vec::new();
 
-    while reader.read_line(&mut line).unwrap() > 0 {
-        line.pop();
+    let mut reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_reader(reader);
 
-        let parts = line.split(",").collect::<Vec<&str>>();
-
-        let x = parts[2].parse::<f64>();
-
-        // Assume that if x is not a number, this is the header row
-        if let Err(_err) = x {
-            line.clear();
-            continue;
+    for result in reader.records() {
+        let record = result.unwrap(); 
+        let row: Row = match record.deserialize(None) {
+            Ok(row) => row,
+            Err(_err) => panic!(
+                "Error - Unable to parse row: [{}]", 
+                record.iter().map(|field| field.to_string()).collect::<Vec<String>>().join(", ")),
         };
+        
+        let datetime = NaiveDateTime::parse_from_str(&row.time, date_fmt);
+
+        let timestamp = match datetime {
+            Ok(time) => time.timestamp(),
+            Err(_err) => panic!("Error - Unable to parse time '{}' to format '{}'", row.time, date_fmt),
+        };
+
+        if !row.x.is_finite() {
+            panic!("Error - Invalid x coordinate: {:?}", row.x);
+        }
+
+        if !row.y.is_finite() {
+            panic!("Error - Invalid y coordinate: {:?}", row.y);
+        }
 
         let record = Record {
-            id: parts[0].parse::<String>().unwrap(),
-            time: NaiveDateTime::parse_from_str(&parts[1].parse::<String>().unwrap(), date_fmt).unwrap().timestamp(),
+            id: row.id,
+            time: timestamp,
             point: Point {
-                x: x.unwrap(),
-                y: parts[3].parse::<f64>().unwrap(),
+                x: row.x,
+                y: row.y,
             },
         };
+
         data.push(record);
-        line.clear();
     }
+
     data
 }
 
@@ -191,7 +216,7 @@ fn main() {
     let stdin = io::stdin();
     let reader = stdin.lock();
 
-    let data = read_stdin_data(reader, &args.fmt_time);
+    let data = read_records_csv(reader, &args.fmt_time);
 
     let id_records = divide_id_records(&data);
 
@@ -213,12 +238,12 @@ fn main() {
 }
 
 #[test]
-fn test_read_multiline_stdin_data() {
+fn test_read_records_csv() {
     let mut input = String::new();
     input.push_str("a,2020-01-01 10:00:00,1.0,1.0\nb,2020-01-01 16:00:00,1.0,1.0");
     let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
 
-    let data = read_stdin_data(
+    let data = read_records_csv(
         &mut input.as_bytes(),
         &date_fmt
     );
@@ -235,17 +260,55 @@ fn test_read_multiline_stdin_data() {
 }
 
 #[test]
-fn test_read_multiline_stdin_data_header() {
+#[should_panic(expected = "Error - Unable to parse row: [a, 2020-01-01 10:00:00, a, b]")]
+fn test_read_records_csv_errors_on_xy_parse_fail() {
     let mut input = String::new();
-    input.push_str("id,time,x,y\nb,2020-01-01 16:00:00,1.0,1.0");
+    input.push_str("a,2020-01-01 10:00:00,a,b");
     let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
 
-    let data = read_stdin_data(
+    read_records_csv(
         &mut input.as_bytes(),
         &date_fmt
     );
-    
-    assert_eq!(data.len(), 1);
+}
+
+#[test]
+#[should_panic(expected = "Error - Unable to parse time 'a' to format '%Y-%m-%d %H:%M:%S'")]
+fn test_read_records_csv_errors_on_datetime_parse_fail() {
+    let mut input = String::new();
+    input.push_str("a,a,1.0,1.0");
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    read_records_csv(
+        &mut input.as_bytes(),
+        &date_fmt
+    );
+}
+
+#[test]
+#[should_panic(expected = "Error - Invalid x coordinate: -inf")]
+fn test_read_records_csv_errors_on_x_infinite() {
+    let mut input = String::new();
+    input.push_str("a,2020-01-01 10:00:00,-Inf,1.0");
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    read_records_csv(
+        &mut input.as_bytes(),
+        &date_fmt
+    );
+}
+
+#[test]
+#[should_panic(expected = "Error - Invalid y coordinate: inf")]
+fn test_read_records_csv_errors_on_y_infinite() {
+    let mut input = String::new();
+    input.push_str("a,2020-01-01 10:00:00,1.0,Inf");
+    let date_fmt = String::from("%Y-%m-%d %H:%M:%S");
+
+    read_records_csv(
+        &mut input.as_bytes(),
+        &date_fmt
+    );
 }
 
 #[test]

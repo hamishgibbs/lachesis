@@ -1,6 +1,10 @@
 [package]
 name = "lachesis"
-version = "0.1.0"
+version = "1.0.0"
+license-file = "LICENSE"
+homepage = "https://github.com/hamishgibbs/lachesis"
+repository = "https://github.com/hamishgibbs/lachesis"
+documentation = "https://github.com/hamishgibbs/lachesis/blob/main/README.md"
 edition = "2021"
 description = "GPS stop point detection from Hariharan and Toyama (2004) 'Project Lachesis: Parsing and Modeling Location Histories'"
 
@@ -9,3 +13,5 @@ description = "GPS stop point detection from Hariharan and Toyama (2004) 'Projec
 [dependencies]
 chrono = "0.4.24"
 clap = { version = "4.2.5", features = ["derive"] }
+csv = "1.2.1"
+serde = { version = "1.0.160", features = ["derive"] }
